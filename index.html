@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ведение счета команд</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        
+        body {
+            padding: 20px;
+            background-color: #f8f9fa;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .add-team-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 4px;
+        }
+        
+        .add-team-btn:hover {
+            background-color: #45a049;
+        }
+        
+        .teams-container {
+            display: grid;
+           gap: 20px;
+          grid-template-columns: 1fr 1fr 1fr;
+            min-height: 400px;
+        }
+        
+        .team-column {
+            min-width: 200px;
+           
+            background-color: white;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .team-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .team-name {
+            flex-grow: 1;
+            font-weight: bold;
+            font-size: 18px;
+            padding: 5px;
+            border: 1px solid transparent;
+            outline: none;
+        }
+        
+        .team-name:focus {
+            border-color: #ccc;
+            background-color: #f9f9f9;
+        }
+        
+        .remove-team-btn {
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 0 5px;
+        }
+        
+        .remove-team-btn:hover {
+            color: #ff4444;
+        }
+        
+        .total-score {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        
+        .score-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .score-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .add-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .add-btn:hover {
+            background-color: #45a049;
+        }
+        
+        .subtract-btn {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        .subtract-btn:hover {
+            background-color: #d32f2f;
+        }
+        
+        .score-history {
+            flex-grow: 1;
+            overflow-y: auto;
+            max-height: 250px;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+        
+        .score-entry {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 5px;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        
+        .score-value {
+            font-weight: bold;
+        }
+        
+        .positive {
+            color: #4CAF50;
+        }
+        
+        .negative {
+            color: #f44336;
+        }
+        
+        .empty-history {
+            text-align: center;
+            color: #999;
+            font-style: italic;
+            padding: 20px 0;
+        }
+        
+        .input-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            width: 300px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .modal-title {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .score-input {
+            width: 100%;
+            padding: 12px;
+            font-size: 18px;
+            text-align: center;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            outline: none;
+        }
+        
+        .score-input:focus {
+            border-color: #4CAF50;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .modal-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .confirm-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .cancel-btn {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .clear-history-btn {
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        
+        .clear-history-btn:hover {
+            background-color: #e68900;
+        }
+    </style>
+</head>
+<body>
+    <h1>Ведение счета команд</h1>
+    
+    <div class="controls">
+        <button class="add-team-btn" id="addTeamBtn">+ Добавить команду</button>
+    </div>
+    
+    <div class="teams-container" id="teamsContainer">
+        <!-- Колонки команд будут добавляться сюда -->
+    </div>
+    
+    <div class="input-modal" id="inputModal">
+        <div class="modal-content">
+            <h3 class="modal-title" id="modalTitle">Введите значение</h3>
+            <input type="number" class="score-input" id="scoreInput" placeholder="0" min="1" autofocus>
+            <div class="modal-buttons">
+                <button class="modal-btn cancel-btn" id="cancelBtn">Отмена</button>
+                <button class="modal-btn confirm-btn" id="confirmBtn">ОК</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>Данные сохраняются автоматически в вашем браузере</p>
+    </div>
+
+    <script>
+        // Данные приложения
+        let teams = [];
+        let activeColumnId = null;
+        let isAddOperation = true; // true для +, false для -
+        
+        // Элементы DOM
+        const teamsContainer = document.getElementById('teamsContainer');
+        const addTeamBtn = document.getElementById('addTeamBtn');
+        const inputModal = document.getElementById('inputModal');
+        const scoreInput = document.getElementById('scoreInput');
+        const modalTitle = document.getElementById('modalTitle');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const confirmBtn = document.getElementById('confirmBtn');
+        
+        // Загрузка данных из localStorage
+        function loadData() {
+            const savedData = localStorage.getItem('teamScoreData');
+            if (savedData) {
+                teams = JSON.parse(savedData);
+            } else {
+                // Начальные данные, если ничего нет в localStorage
+                teams = [
+                    {
+                        id: 1,
+                        name: "Команда 1",
+                        totalScore: 0,
+                        history: [
+                            { value: 500, isAdd: true, timestamp: Date.now() - 3600000 }
+                        ]
+                    },
+                    {
+                        id: 2,
+                        name: "Команда 2",
+                        totalScore: 0,
+                        history: []
+                    }
+                ];
+                // Пересчитываем итоговые счета для начальных данных
+                teams.forEach(team => {
+                    team.totalScore = team.history.reduce((sum, entry) => {
+                        return entry.isAdd ? sum + entry.value : sum - entry.value;
+                    }, 0);
+                });
+            }
+        }
+        
+        // Сохранение данных в localStorage
+        function saveData() {
+            localStorage.setItem('teamScoreData', JSON.stringify(teams));
+        }
+        
+        // Инициализация приложения
+        function init() {
+            loadData();
+            renderTeams();
+            setupEventListeners();
+        }
+        
+        // Рендеринг колонок команд
+        function renderTeams() {
+            teamsContainer.innerHTML = '';
+            
+            if (teams.length === 0) {
+                teamsContainer.innerHTML = `
+                    <div style="text-align: center; width: 100%; padding: 50px; color: #666;">
+                        Нет команд. Нажмите "Добавить команду", чтобы начать.
+                    </div>
+                `;
+                return;
+            }
+            
+            teams.forEach(team => {
+                const column = document.createElement('div');
+                column.className = 'team-column';
+                column.dataset.teamId = team.id;
+                
+                // Форматируем историю
+                let historyHTML = '';
+                if (team.history.length === 0) {
+                    historyHTML = `<div class="empty-history">Нет записей</div>`;
+                } else {
+                    // Показываем последние 10 записей
+                    const recentHistory = team.history.slice(-10);
+                    recentHistory.forEach(entry => {
+                        const sign = entry.isAdd ? '+' : '-';
+                        const className = entry.isAdd ? 'positive' : 'negative';
+                        historyHTML += `
+                            <div class="score-entry">
+                                <span>${sign}${entry.value}</span>
+                                <span class="score-value ${className}">${sign}${entry.value}</span>
+                            </div>
+                        `;
+                    });
+                }
+                
+                column.innerHTML = `
+                    <div class="team-header">
+                        <input type="text" class="team-name" value="${team.name}" data-team-id="${team.id}">
+                        <button class="remove-team-btn" data-team-id="${team.id}">×</button>
+                    </div>
+                    <div class="total-score" id="total-${team.id}">
+                        ${team.totalScore}
+                    </div>
+                    <div class="score-controls">
+                        <button class="score-btn add-btn" data-team-id="${team.id}" data-operation="add">+</button>
+                        <button class="score-btn subtract-btn" data-team-id="${team.id}" data-operation="subtract">-</button>
+                    </div>
+                    <div class="score-history">
+                        ${historyHTML}
+                        ${team.history.length > 0 ? 
+                          `<button class="clear-history-btn" data-team-id="${team.id}">Очистить историю</button>` : 
+                          ''}
+                    </div>
+                `;
+                
+                teamsContainer.appendChild(column);
+            });
+            
+            // Обновляем обработчики событий для динамически созданных элементов
+            updateEventListeners();
+        }
+        
+        // Настройка обработчиков событий
+        function setupEventListeners() {
+            addTeamBtn.addEventListener('click', addNewTeam);
+            cancelBtn.addEventListener('click', closeModal);
+            confirmBtn.addEventListener('click', confirmScoreChange);
+            scoreInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    confirmScoreChange();
+                }
+            });
+        }
+        
+        // Обновление обработчиков для динамических элементов
+        function updateEventListeners() {
+            // Обработчики для изменения названий команд
+            document.querySelectorAll('.team-name').forEach(input => {
+                input.addEventListener('blur', function() {
+                    const teamId = parseInt(this.dataset.teamId);
+                    const newName = this.value.trim();
+                    
+                    if (newName === '') {
+                        this.value = teams.find(t => t.id === teamId).name;
+                        return;
+                    }
+                    
+                    updateTeamName(teamId, newName);
+                });
+                
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        this.blur();
+                    }
+                });
+            });
+            
+            // Обработчики для кнопок + и -
+            document.querySelectorAll('.score-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const teamId = parseInt(this.dataset.teamId);
+                    const operation = this.dataset.operation;
+                    
+                    openModal(teamId, operation === 'add');
+                });
+            });
+            
+            // Обработчики для удаления команд
+            document.querySelectorAll('.remove-team-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const teamId = parseInt(this.dataset.teamId);
+                    if (confirm('Удалить эту команду?')) {
+                        removeTeam(teamId);
+                    }
+                });
+            });
+            
+            // Обработчики для очистки истории
+            document.querySelectorAll('.clear-history-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const teamId = parseInt(this.dataset.teamId);
+                    if (confirm('Очистить историю этой команды?')) {
+                        clearTeamHistory(teamId);
+                    }
+                });
+            });
+        }
+        
+        // Добавление новой команды
+        function addNewTeam() {
+            const newId = teams.length > 0 ? Math.max(...teams.map(t => t.id)) + 1 : 1;
+            const newTeam = {
+                id: newId,
+                name: `Команда ${newId}`,
+                totalScore: 0,
+                history: []
+            };
+            
+            teams.push(newTeam);
+            renderTeams();
+            saveData();
+        }
+        
+        // Удаление команды
+        function removeTeam(teamId) {
+            teams = teams.filter(team => team.id !== teamId);
+            renderTeams();
+            saveData();
+        }
+        
+        // Обновление названия команды
+        function updateTeamName(teamId, newName) {
+            const team = teams.find(t => t.id === teamId);
+            if (team) {
+                team.name = newName;
+                saveData();
+            }
+        }
+        
+        // Очистка истории команды
+        function clearTeamHistory(teamId) {
+            const team = teams.find(t => t.id === teamId);
+            if (team) {
+                team.history = [];
+                team.totalScore = 0;
+                renderTeams();
+                saveData();
+            }
+        }
+        
+        // Открытие модального окна для ввода значения
+        function openModal(teamId, isAdd) {
+            activeColumnId = teamId;
+            isAddOperation = isAdd;
+            
+            const team = teams.find(t => t.id === teamId);
+            const operationText = isAdd ? 'добавить к' : 'вычесть из';
+            modalTitle.textContent = `Сколько ${operationText} "${team.name}"?`;
+            
+            scoreInput.value = '';
+            inputModal.style.display = 'flex';
+            scoreInput.focus();
+        }
+        
+        // Закрытие модального окна
+        function closeModal() {
+            inputModal.style.display = 'none';
+            activeColumnId = null;
+        }
+        
+        // Подтверждение изменения счета
+        function confirmScoreChange() {
+            const value = parseInt(scoreInput.value);
+            
+            if (isNaN(value) || value <= 0) {
+                alert('Введите положительное число');
+                return;
+            }
+            
+            if (activeColumnId) {
+                updateTeamScore(activeColumnId, value, isAddOperation);
+            }
+            
+            closeModal();
+        }
+        
+        // Обновление счета команды
+        function updateTeamScore(teamId, value, isAdd) {
+            const team = teams.find(t => t.id === teamId);
+            
+            if (team) {
+                // Добавляем запись в историю
+                team.history.push({
+                    value: value,
+                    isAdd: isAdd,
+                    timestamp: Date.now()
+                });
+                
+                // Обновляем итоговый счет
+                team.totalScore = isAdd ? team.totalScore + value : team.totalScore - value;
+                
+                // Сохраняем и обновляем отображение
+                saveData();
+                renderTeams();
+            }
+        }
+        
+        // Запуск приложения
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
